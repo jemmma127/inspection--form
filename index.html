@@ -1,0 +1,380 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>华南营运处佛山希音仓巡岗登记表</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:#f0f2f5;color:#333;padding:20px}
+.container{max-width:1000px;margin:0 auto}
+h1{font-size:1.3rem;text-align:center;margin-bottom:4px;color:#1a1a2e}
+.subtitle{text-align:center;font-size:.85rem;color:#666;margin-bottom:16px}
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:20px;margin-bottom:16px}
+.card h2{font-size:1rem;margin-bottom:12px;color:#1a1a2e;border-left:3px solid #1890ff;padding-left:10px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-row.three{grid-template-columns:1fr 1fr 1fr}
+.form-group{margin-bottom:0}
+.form-group label{display:block;font-size:.82rem;font-weight:600;color:#555;margin-bottom:3px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:7px 10px;border:1px solid #d9d9d9;border-radius:4px;font-size:.9rem;outline:none}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#1890ff;box-shadow:0 0 0 2px rgba(24,144,255,.15)}
+.form-group textarea{resize:vertical;min-height:60px;font-family:inherit}
+.form-group input[readonly]{background:#f5f5f5;color:#666}
+.form-row.full{grid-template-columns:1fr}
+.btn{padding:8px 20px;border:none;border-radius:4px;font-size:.88rem;cursor:pointer;display:inline-block;transition:all .2s}
+.btn-pri{background:#1890ff;color:#fff}.btn-pri:hover{background:#096dd9}
+.btn-green{background:#52c41a;color:#fff}.btn-green:hover{background:#389e0d}
+.btn-red{background:#ff4d4f;color:#fff}.btn-red:hover{background:#cf1322}
+.btn-out{background:#fff;border:1px solid #d9d9d9;color:#333}.btn-out:hover{color:#1890ff;border-color:#1890ff}
+.btn-sm{padding:4px 12px;font-size:.8rem}
+.actions{text-align:center;margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid #e8e8e8}
+th{background:#fafafa;font-weight:600;color:#555;white-space:nowrap}
+tr:hover{background:#fafafa}
+.table-wrap{overflow-x:auto}
+.empty{text-align:center;padding:30px;color:#999;font-size:.9rem}
+.toast{position:fixed;bottom:24px;right:24px;background:#333;color:#fff;padding:12px 20px;border-radius:6px;font-size:.88rem;box-shadow:0 4px 12px rgba(0,0,0,.2);opacity:0;transition:opacity .3s;z-index:999;pointer-events:none}
+.toast.show{opacity:1}
+.filter-bar{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.filter-bar select,.filter-bar input{padding:4px 8px;border:1px solid #d9d9d9;border-radius:4px;font-size:.82rem}
+.fc{display:none;background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:20px;margin-bottom:16px}.fc.s{display:block}.fc h2{font-size:1rem;margin-bottom:12px;color:#1a1a2e;border-left:3px solid #52c41a;padding-left:10px}.ta{width:100%;min-height:110px;font-size:.82rem;font-family:Consolas,'Courier New',monospace;padding:8px;border:1px solid #d9d9d9;border-radius:4px;resize:vertical;margin-bottom:8px}.hl{font-size:.78rem;color:#1890ff;cursor:pointer;text-decoration:underline;display:inline-block}.hc{display:none;font-size:.82rem;color:#555;background:#f9f9f9;padding:12px;border-radius:4px;margin-top:6px;line-height:1.7}.hc.s{display:block}.bs{font-size:.75rem;display:inline-block;margin-left:6px;padding:2px 8px;border-radius:10px}.bs.g{background:#e6f7e6;color:#389e0d}.bs.r{background:#fff2f0;color:#cf1322}.bs.y{background:#f0f0f0;color:#999}.sb{display:inline-flex;align-items:center;gap:4px;font-size:.78rem;color:#999}.sb a{color:#1890ff;cursor:pointer;text-decoration:none}.sb a:hover{text-decoration:underline}.sd{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:2px}.sd.g{background:#52c41a}.sd.r{background:#ff4d4f}.sd.y{background:#faad14}@media(max-width:640px){.form-row,.form-row.three,.form-row.four{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>华南营运处佛山希音仓巡岗登记表</h1>
+<p class="subtitle">自动生成序号/日期/时间，巡岗地点请选择 <span class="sb"><span class="sd y" id="sd"></span><span id="sl">本地模式</span> | <a onclick="document.getElementById('fc').classList.toggle('s')">同步设置</a></span></p>
+
+<div class="card">
+<h2>填写登记</h2>
+<div class="form-row three">
+<div class="form-group"><label>序号</label><input id="fId" readonly></div>
+<div class="form-group"><label>日期</label><input id="fDate" readonly></div>
+<div class="form-group"><label>巡岗时间</label><input id="fTime" readonly></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>巡岗地点</label>
+<select id="fLoc"><option value="">-- 选择 --</option>
+<option value="1区">1区</option><option value="2区">2区</option><option value="3区">3区</option>
+<option value="4区">4区</option><option value="5区">5区</option><option value="6区">6区</option>
+<option value="7区">7区</option><option value="8区">8区</option><option value="9区">9区</option>
+<option value="10区">10区</option>
+<option value="退供区">退供区</option><option value="西码头">西码头</option>
+<option value="入库区">入库区</option><option value="扫描区">扫描区</option>
+<option value="东码头">东码头</option>
+</select>
+</div>
+<div class="form-group"><label>巡查人</label><input id="fPerson" placeholder="姓名"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>有无异常</label>
+<select id="fAbnormal"><option value="无">无</option><option value="有">有</option></select>
+</div>
+<div class="form-group"><label>异常描述</label><input id="fAbnormalDesc" placeholder="如有异常请描述"></div>
+</div>
+<div class="form-row full"><div class="form-group"><label>处理结果</label><textarea id="fResult" placeholder="选填"></textarea></div></div>
+<div class="form-row full"><div class="form-group"><label>备注</label><textarea id="fRemark" placeholder="选填"></textarea></div></div>
+<div class="actions">
+<button class="btn btn-pri" onclick="submitForm()">提交</button>
+<button class="btn btn-out" onclick="resetForm()">重置</button>
+</div>
+</div>
+
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<h2 style="border:none;margin:0;padding:0">登记记录</h2>
+<div><button class="btn btn-green btn-sm" onclick="exportExcel()">导出Excel</button>
+<button class="btn btn-red btn-sm" onclick="clearAll()">清空</button></div>
+</div>
+<div class="filter-bar">
+<input type="date" id="filterDate" onchange="renderTable()">
+<select id="filterLoc" onchange="renderTable()">
+<option value="">全部区域</option>
+<option value="1区">1区</option><option value="2区">2区</option><option value="3区">3区</option>
+<option value="4区">4区</option><option value="5区">5区</option><option value="6区">6区</option>
+<option value="7区">7区</option><option value="8区">8区</option><option value="9区">9区</option>
+<option value="10区">10区</option>
+<option value="退供区">退供区</option><option value="西码头">西码头</option>
+<option value="入库区">入库区</option><option value="扫描区">扫描区</option>
+<option value="东码头">东码头</option>
+</select>
+<button class="btn btn-out btn-sm" onclick="clearFilter()">清除</button>
+</div>
+<div id="tableWrap"><div class="empty">暂无记录</div></div>
+</div>
+</div>
+<div class="fc" id="fc"><h2>云端同步 <span class="bs y" id="fsb">未配置</span></h2><p style="font-size:.82rem;color:#555;margin-bottom:8px">配置 Firebase 后所有设备数据实时同步，一处提交各处可见。</p><textarea id="fbi" class="ta" placeholder='{"apiKey":"xxx","authDomain":"xxx","databaseURL":"https://xxx.firebaseio.com","projectId":"xxx"}'></textarea><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px"><button class="btn btn-green btn-sm" onclick="saveFBConfig()">保存配置</button><button class="btn btn-out btn-sm" onclick="clearFBConfig()">清除配置</button><button class="btn btn-out btn-sm" onclick="document.getElementById('fc').classList.remove('s')">关闭</button></div><a class="hl" onclick="document.getElementById('fh').classList.toggle('s')">如何获取 Firebase 配置？</a><div class="hc" id="fh"><b>步骤：</b><br>1. 前往 <a href="https://console.firebase.google.com" target="_blank">Firebase 控制台</a> 登录 Google 账号<br>2. 创建项目，添加 Web 应用<br>3. 复制配置 JSON（含 apiKey / databaseURL）<br>4. 左侧菜单 → 构建 → Realtime Database → 创建数据库<br>5. 选"测试模式启动" → 启用<br>6. 粘贴配置到上方文本框 → 保存配置<br><b style="color:red">注意：</b>测试模式允许任何人读写，适合内部使用。</div></div><div class="toast" id="toast"></div>
+<script>
+var STOR = "patrol_records_v2";
+var records = [];
+var fbApp = null;
+var fbDb = null;
+var fbReady = false;
+var fbListenerRef = null;
+
+function $(id) { return document.getElementById(id); }
+
+function toast(msg) {
+    var e = $("toast");
+    e.textContent = msg;
+    e.classList.add("show");
+    clearTimeout(e._t);
+    e._t = setTimeout(function(){ e.classList.remove("show"); }, 2200);
+}
+
+function getNow() {
+    var d = new Date();
+    return {
+        date: d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"),
+        time: String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0") + ":" + String(d.getSeconds()).padStart(2,"0")
+    };
+}
+
+function fillAuto() {
+    var n = getNow();
+    $("fDate").value = n.date;
+    $("fTime").value = n.time;
+    $("fId").value = (records ? records.length : 0) + 1;
+}
+
+function resetForm() {
+    $("fLoc").value = "";
+    $("fPerson").value = "";
+    $("fAbnormal").value = "无";
+    $("fAbnormalDesc").value = "";
+    $("fResult").value = "";
+    $("fRemark").value = "";
+    fillAuto();
+}
+
+function setSyncStatus(mode, color) {
+    var dot = document.getElementById("sd");
+    var label = document.getElementById("sl");
+    if (dot) dot.className = "sd " + (color || "y");
+    if (label) label.textContent = mode || "未知";
+}
+
+// ==================== Firebase ====================
+
+function getFBConfig() {
+    try { var c = localStorage.getItem("fb_config"); if (c) return JSON.parse(c); }
+    catch(e) {}
+    // ====== 内置 Firebase 配置（所有人自动连接）=======
+    return {
+        "apiKey": "AIzaSyAaDKYeyeafNHBCkfzVGj5FUuoQIpKJ9yg",
+        "authDomain": "inspection--form.firebaseapp.com",
+        "databaseURL": "https://inspection--form-default-rtdb.firebaseio.com",
+        "projectId": "inspection--form",
+        "storageBucket": "inspection--form.firebasestorage.app",
+        "messagingSenderId": "755616044650",
+        "appId": "1:755616044650:web:1e970d05f88b51e6b41c13"
+    };
+}
+
+function initFB() {
+    var cfg = getFBConfig();
+    var fsb = $("fsb");
+    if (!cfg || !cfg.apiKey || !cfg.databaseURL) {
+        fbReady = false;
+        setSyncStatus("本地模式", "y");
+        if (fsb) { fsb.textContent = "未配置"; fsb.className = "bs y"; }
+        return;
+    }
+    try {
+        fbApp = firebase.initializeApp(cfg, "patrolApp");
+        fbDb = firebase.database(fbApp);
+        fbReady = true;
+        setSyncStatus("已连接", "g");
+        if (fsb) { fsb.textContent = "已连接"; fsb.className = "bs g"; }
+        startFBListener();
+    } catch(e) {
+        console.error("FB err:", e);
+        fbReady = false;
+        setSyncStatus("连接失败", "r");
+        if (fsb) { fsb.textContent = "配置错误"; fsb.className = "bs r"; }
+        loadLocal();
+    }
+}
+
+function startFBListener() {
+    if (!fbReady || !fbDb) return;
+    if (fbListenerRef) { fbListenerRef.off(); fbListenerRef = null; }
+    var ref = fbDb.ref("patrol_v3");
+    fbListenerRef = ref;
+    fbListenerRef.on("value", function(snap) {
+        var data = snap.val();
+        records = [];
+        if (data) {
+            Object.keys(data).forEach(function(k) {
+                var r = data[k];
+                if (r) { r._fbKey = k; records.push(r); }
+            });
+        }
+        localStorage.setItem(STOR, JSON.stringify(records));
+        renderTable();
+        fillAuto();
+    }, function(err) {
+        console.error("FB listener err:", err);
+        setSyncStatus("监听失败", "r");
+    });
+}
+
+function loadLocal() {
+    try { var r = localStorage.getItem(STOR); records = r ? JSON.parse(r) : []; }
+    catch(e) { records = []; }
+    var d = JSON.parse(localStorage.getItem("patrol_del") || "[]");
+    if (d.length) records = records.filter(function(r){ return d.indexOf(r.id) < 0; });
+    renderTable();
+}
+
+function saveToFB(rec, cb) {
+    if (!fbReady || !fbDb) { if (cb) cb(); return; }
+    fbDb.ref("patrol_v3/" + rec.id).set(rec, function(err) {
+        if (err) { console.error("FB save err:", err); toast("云端同步失败，已保存本地"); }
+        if (cb) cb();
+    });
+}
+
+function deleteFromFB(id, cb) {
+    if (!fbReady || !fbDb) { if (cb) cb(); return; }
+    fbDb.ref("patrol_v3/" + id).remove(function(err) {
+        if (err) console.error("FB del err:", err);
+        if (cb) cb();
+    });
+}
+
+function clearFB(cb) {
+    if (!fbReady || !fbDb) { if (cb) cb(); return; }
+    fbDb.ref("patrol_v3").remove(function(err) {
+        if (err) console.error("FB clear err:", err);
+        if (cb) cb();
+    });
+}
+
+function renderTable() {
+    var w = $("tableWrap");
+    if (!records || !records.length) { w.innerHTML = "<div class=\"empty\">暂无记录</div>"; return; }
+    var fd = $("filterDate"), fl = $("filterLoc"), f = records;
+    if (fd && fd.value) f = f.filter(function(r){ return r.date == fd.value; });
+    if (fl && fl.value) f = f.filter(function(r){ return r.location == fl.value; });
+    f = f.slice().sort(function(a,b){ return a.id > b.id ? -1 : 1; });
+    var h = "<table><tr><th>#</th><th>日期</th><th>时间</th><th>地点</th><th>巡查人</th><th>异常</th><th>描述</th><th>处理结果</th><th>备注</th><th>操作</th></tr>";
+    f.forEach(function(r, i) {
+        h += "<tr><td>" + (i+1) + "</td><td>" + esc(r.date) + "</td><td>" + esc(r.time)
+            + "</td><td>" + esc(r.location) + "</td><td>" + esc(r.person) + "</td><td>"
+            + (r.abnormal == "有" ? "<b style=color:red>有</b>" : "无") + "</td><td>"
+            + esc(r.abnormalDesc) + "</td><td>" + esc(r.result) + "</td><td>" + esc(r.remark)
+            + "</td><td><button class=\"btn btn-red btn-sm\" onclick=\"delRec('" + r.id + "')\">删</button></td></tr>";
+    });
+    w.innerHTML = h + "</table>";
+}
+
+function esc(s) { var d = document.createElement("div"); d.textContent = s || ""; return d.innerHTML; }
+
+function delRec(id) {
+    if (!confirm("确定删除？")) return;
+    records = records.filter(function(r){ return r.id != id; });
+    saveData();
+    if (fbReady) { deleteFromFB(id, function(){ renderTable(); toast("已删除"); }); }
+    else {
+        var d = JSON.parse(localStorage.getItem("patrol_del") || "[]");
+        if (d.indexOf(id) < 0) d.push(id);
+        localStorage.setItem("patrol_del", JSON.stringify(d));
+        renderTable(); toast("已删除");
+    }
+}
+
+function clearAll() {
+    if (!confirm("确定清空所有记录？")) return;
+    if (!confirm("再次确认？")) return;
+    records = []; saveData(); localStorage.removeItem("patrol_del");
+    if (fbReady) clearFB(function(){ renderTable(); toast("已清空"); });
+    else { renderTable(); toast("已清空"); }
+}
+
+function clearFilter() {
+    var fd = $("filterDate"); if (fd) fd.value = "";
+    var fl = $("filterLoc"); if (fl) fl.value = "";
+    renderTable();
+}
+
+function submitForm() {
+    var loc = $("fLoc").value, person = $("fPerson").value.trim();
+    var abnormal = $("fAbnormal").value, desc = $("fAbnormalDesc").value.trim();
+    var result = $("fResult").value.trim(), remark = $("fRemark").value.trim();
+    if (!loc) { toast("请选择巡岗地点"); return; }
+    if (!person) { toast("请输入巡查人姓名"); return; }
+    if (abnormal == "有" && !desc) { toast("如有异常请描述"); return; }
+    var n = getNow(), seq = (records ? records.length : 0) + 1;
+    var rec = {
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2,5),
+        seq: seq, date: n.date, time: n.time, location: loc, person: person,
+        abnormal: abnormal, abnormalDesc: desc, result: result, remark: remark,
+        createdAt: new Date().toISOString()
+    };
+    records.push(rec); saveData();
+    if (fbReady) {
+        saveToFB(rec, function(){ renderTable(); resetForm(); toast("提交成功 已同步"); });
+    } else {
+        renderTable(); resetForm(); toast("提交成功");
+    }
+}
+
+function saveData() { localStorage.setItem(STOR, JSON.stringify(records)); }
+
+function exportExcel() {
+    if (!records || !records.length) { toast("暂无数据"); return; }
+    var fd = $("filterDate"), fl = $("filterLoc"), data = records;
+    if (fd && fd.value) data = data.filter(function(r){ return r.date == fd.value; });
+    if (fl && fl.value) data = data.filter(function(r){ return r.location == fl.value; });
+    var d = data.slice().sort(function(a,b){ return a.id > b.id ? -1 : 1; }).map(function(r,i){
+        return { "序号": i+1, "日期": r.date, "时间": r.time, "地点": r.location, "巡查人": r.person,
+                 "异常": r.abnormal, "描述": r.abnormalDesc, "处理结果": r.result, "备注": r.remark };
+    });
+    var ws = XLSX.utils.json_to_sheet(d);
+    ws["!cols"] = [{wch:6},{wch:12},{wch:10},{wch:12},{wch:10},{wch:6},{wch:20},{wch:20},{wch:16}];
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "巡岗记录");
+    XLSX.writeFile(wb, "巡岗登记_" + getNow().date + ".xlsx");
+    toast("导出成功");
+}
+
+// ==================== Firebase Config UI ====================
+
+function saveFBConfig() {
+    var val = $("fbi").value.trim();
+    if (!val) { toast("请粘贴配置"); return; }
+    try {
+        var cfg = JSON.parse(val);
+        if (!cfg.apiKey || !cfg.databaseURL) { toast("缺少 apiKey 或 databaseURL"); return; }
+        localStorage.setItem("fb_config", JSON.stringify(cfg));
+        toast("配置已保存，刷新中...");
+        location.reload();
+    } catch(e) { toast("JSON 格式错误"); $("fbi").focus(); }
+}
+
+function clearFBConfig() {
+    if (!confirm("清除后需重新配置")) return;
+    localStorage.removeItem("fb_config");
+    location.reload();
+}
+
+// ==================== Init ====================
+
+function loadData() {
+    var cfg = getFBConfig();
+    var fsb = $("fsb");
+    if (cfg && cfg.apiKey && cfg.databaseURL) {
+        if (fsb) { fsb.textContent = "连接中..."; fsb.className = "bs y"; }
+        setSyncStatus("连接中...", "y"); initFB();
+    } else {
+        loadLocal(); setSyncStatus("本地模式", "y");
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function(){ loadData(); fillAuto(); });
+</script>
+</body>
+</html>
